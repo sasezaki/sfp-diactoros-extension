@@ -11,12 +11,22 @@ namespace SfpDiactoros\Response;
 
 use RuntimeException;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\RequestInterface;
 use SfpDiactoros\Stream\FpassthruInterface;
 use SfpDiactoros\Stream\RewindFpassthruInterface;
 use Zend\Diactoros\Response\EmitterInterface;
 
 class SwitchingEmitter implements EmitterInterface
 {
+
+    public function __invoke(RequestInterface $request, ResponseInterface $response, callable $next)
+    {
+        $response = $next($request, $response);
+        $this->emit($response);
+
+        return $response;
+    }
+
     /**
      * Emits a response for a PHP SAPI environment.
      *

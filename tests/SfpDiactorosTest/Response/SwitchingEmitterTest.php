@@ -5,6 +5,7 @@ namespace SfpDiactorosTest\Response;
 use PHPUnit_Framework_TestCase;
 use PHPUnit_Extension_FunctionMocker;
 use Zend\Diactoros\Response;
+use Zend\Diactoros\ServerRequestFactory;
 use SfpDiactoros\Response\SwitchingEmitter;
 use SfpDiactoros\Stream\RewindFpassthruStream;
 
@@ -54,6 +55,33 @@ class SwitchingEmitterTest extends PHPUnit_Framework_TestCase
 
         ob_start();
         $this->emitter->emit($response);
+        $this->assertEquals($expected, ob_get_clean());
+    }
+
+    /** @runInSeparateProcess */
+    public function testMiddlewareSignature()
+    {
+        $expected = __FUNCTION__;
+        $stream = new RewindFpassthruStream("data://text/html,{$expected}");
+        $response = new Response($stream);
+
+        $sender = $this->emitter;
+
+        $this->php->expects($this->once())
+            ->method('headers_sent')
+            ->will($this->returnValue(false));
+        $this->php->expects($this->once())
+            ->method('rewind');
+
+        ob_start();
+        $response = $sender(
+            ServerRequestFactory::fromGlobals(),
+            $response,
+            function ($request, $response) {
+                return $response;
+            }
+        );
+
         $this->assertEquals($expected, ob_get_clean());
     }
 }
