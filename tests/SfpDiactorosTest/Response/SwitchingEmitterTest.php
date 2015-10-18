@@ -5,7 +5,6 @@ namespace SfpDiactorosTest\Response;
 use PHPUnit_Framework_TestCase;
 use PHPUnit_Extension_FunctionMocker;
 use Zend\Diactoros\Response;
-use Zend\Diactoros\ServerRequestFactory;
 use SfpDiactoros\Response\SwitchingEmitter;
 use SfpDiactoros\Stream\RewindFpassthruStream;
 
@@ -75,7 +74,7 @@ class SwitchingEmitterTest extends PHPUnit_Framework_TestCase
 
         ob_start();
         $response = $sender(
-            ServerRequestFactory::fromGlobals(),
+            $this->getMock('Psr\\Http\\Message\\RequestInterface'),
             $response,
             function ($request, $response) {
                 return $response;
